@@ -1,0 +1,21 @@
+{
+  "name": "v-share",
+  "version": "1.0.0",
+  "description": "Small Application for share images , gif....",
+  "main": "server.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "anhntv11",
+  "license": "ISC",
+  "dependencies": {
+    "body-parser": "^1.15.1",
+    "cookie-parser": "^1.4.1",
+    "errorhandler": "^1.4.3",
+    "express": "^4.13.4",
+    "express-handlebars": "^3.0.0",
+    "method-override": "^2.3.5",
+    "moment": "^2.13.0",
+    "morgan": "^1.7.0"
+  }
+}
