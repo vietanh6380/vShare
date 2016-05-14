@@ -3,7 +3,7 @@
  */
 var MongoClient = require('mongodb').MongoClient;
 
-var urlConnection = 'mongodb://localhost:27017/myproject';
+var urlConnection = 'mongodb://admin:123456@ds017582.mlab.com:17582/nodeblog';
 var sampleCollection = 'chapters';
 
 //We need to insert these chapters into mongoDB

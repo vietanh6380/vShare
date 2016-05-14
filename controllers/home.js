@@ -40,6 +40,8 @@ module.exports = {
                 }
             ]
         };
-        res.render('index', viewModel);
+        sidebar(viewModel, function () {
+            res.render('index', viewModel);
+        });
     }
 }

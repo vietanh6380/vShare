@@ -11,6 +11,7 @@ var morgan = require('morgan');
 var methodOverride = require('method-override');
 var errorHandler = require('errorhandler');
 var moment = require('moment');
+var multer = require('multer');
 
 module.exports = function (app) {
     // using module morgan for logging
@@ -18,6 +19,10 @@ module.exports = function (app) {
     // using module bodyparse for packing of any form fields that are submitted via a HTML form submission from a browser
     app.use(bodyParser({'extended': true}));
     app.use(bodyParser.json());
+    app.use(multer({
+        dest: path.join(__dirname + '/public/upload/temp')
+    }))
+    ;
     // using module methodOverride fake REST HTTP Vebrs such as UPDATE , PUT .. for old browser
     app.use(methodOverride());
     // using sent/received cookie
