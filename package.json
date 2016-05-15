@@ -9,16 +9,20 @@
   "author": "anhntv11",
   "license": "ISC",
   "dependencies": {
+    "async": "^2.0.0-rc.4",
     "body-parser": "^1.15.1",
     "cookie-parser": "^1.4.1",
     "errorhandler": "^1.4.3",
     "express": "^4.13.4",
     "express-handlebars": "^3.0.0",
+    "md5": "^2.1.0",
     "method-override": "^2.3.5",
     "moment": "^2.13.0",
     "mongodb": "^2.1.18",
     "mongoose": "^4.4.17",
     "morgan": "^1.7.0",
-    "multer": "^0.1.8"
+    "multer": "^0.1.8",
+    "request": "^2.72.0",
+    "underscore": "^1.8.3"
   }
 }

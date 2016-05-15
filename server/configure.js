@@ -14,41 +14,32 @@ var moment = require('moment');
 var multer = require('multer');
 
 module.exports = function (app) {
-    // using module morgan for logging
-    app.use(morgan('dev'));
-    // using module bodyparse for packing of any form fields that are submitted via a HTML form submission from a browser
-    app.use(bodyParser({'extended': true}));
-    app.use(bodyParser.json());
-    app.use(multer({
-        dest: path.join(__dirname + '/public/upload/temp')
-    }))
-    ;
-    // using module methodOverride fake REST HTTP Vebrs such as UPDATE , PUT .. for old browser
-    app.use(methodOverride());
-    // using sent/received cookie
-    app.use(cookieParser('secret-cookie'));
-    // using declare router of application
-    routes(app);
-    // using working static resource in public folder
-    app.use('/public/', express.static(path.join(__dirname + '../public')));
-
-    // using handler error . example : render 404 page, return error
-    if (app.get('env') === 'developement') {
-        app.use(errorHandler());
-    }
-
-    // using view engine handlebars
     app.engine('handlebars', exphbs.create({
         defaultLayout: 'main',
-        layoutDir: app.get('views' + '/layouts'),
-        partialDir: [app.get('views' + '/partials')],
+        layoutsDir: app.get('views') + '/layouts',
+        partialsDir: [app.get('views') + '/partials'],
         helpers: {
             timeago: function (timestamp) {
+                console.log(timestamp);
                 return moment(timestamp).startOf('minute').fromNow();
             }
         }
     }).engine);
-
     app.set('view engine', 'handlebars');
+
+    app.use(morgan('dev'));
+    app.use(bodyParser());
+    app.use(multer({dest: path.join(__dirname, 'public/upload/temp')}));
+
+    app.use(methodOverride());
+    app.use(cookieParser('some-secret-value-here'));
+    routes.initialize(app);
+
+    app.use('/public/', express.static(path.join(__dirname, '../public')));
+
+    if ('development' === app.get('env')) {
+        app.use(errorHandler());
+    }
+
     return app;
 };

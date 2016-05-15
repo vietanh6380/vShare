@@ -3,40 +3,33 @@
  */
 var fs = require('fs');
 var path = require('path');
-var sidebar = require('./helpers/sidebar');
+var sidebar = require('../helpers/sidebar');
+var Models = require('../models');
+var md5 = require('md5');
 
 module.exports = {
     index: function (req, res) {
         var viewModel = {
-            image: {
-                uniqueId: 1,
-                title: 'Sample Image 1',
-                description: 'This is a sample.',
-                filename: 'sample1.jpg',
-                views: 0,
-                likes: 0,
-                timestamp: Date.now()
-            },
-            comments: [
-                {
-                    image_id: 1,
-                    email: 'test@testing.com',
-                    name: 'Test Tester',
-                    gravatar: 'http://lorempixel.com/75/75/animals/1',
-                    comment: 'This is a test comment...',
-                    timestamp: Date.now()
-                }, {
-                    image_id: 1,
-                    email: 'test@testing.com',
-                    name: 'Test Tester',
-                    gravatar: 'http://lorempixel.com/75/75/animals/2',
-                    comment: 'Another followup comment!',
-                    timestamp: Date.now()
-                }
-            ]
+            image: {},
+            comments: []
         };
-        sidebar(viewModel, function (viewModel) {
-            res.render('image', viewModel);
+        Models.Image.findOne({filename: {$regex: req.params.image_id}}, function (err, image) {
+            if (err) throw err;
+            if (image) {
+                image.views = image.views + 1;
+                viewModel.image = image;
+                image.save();
+
+                Models.Comment.find({image_id: image._id}, {}, {sort: {timestamp: 1}}, function (err, comments) {
+                    if (err) throw err;
+                    viewModel.comments = comments;
+                    sidebar(viewModel, function (viewModel) {
+                        res.render('image', viewModel);
+                    });
+                });
+            } else {
+                res.redirect('/');
+            }
         });
     },
     create: function (req, res) {
@@ -47,36 +40,112 @@ module.exports = {
             for (var i = 0; i < 6; i++) {
                 imageUrl += possible.charAt(Math.floor(Math.random() * possible.length));
             }
-            // tempPath file after upload vid form
-            var tempPath = req.files.file.path;
-            console.log(tempPath);
-            // type of file
-            var fileType = path.extname(req.files.file.name).toLowerCase();
-            // targetPath of file
-            var targetPath = path.resolve('./public/upload/' + imageUrl + fileType);
+            // Check image exist from URL if exist try again (start over)
+            Models.Image.find({filename: imageUrl}, function (err, images) {
+                if (images.length > 0) {
+                    saveImage();
+                } else {
+                    // tempPath file after upload vid form
+                    var tempPath = req.files.file.path;
+                    console.log(tempPath);
+                    // type of file
+                    var fileType = path.extname(req.files.file.name).toLowerCase();
+                    // targetPath of file
+                    var targetPath = path.resolve('./public/upload/' + imageUrl + fileType);
 
-            if (fileType === '.png' || fileType === '.jpg' || fileType === '.gif' || fileType === '.jpeg') {
-                // move file from temp to target folder
-                fs.rename(tempPath, targetPath, function (err) {
-                    if (err) throw err;
-                    res.redirect('/images/' + imageUrl);
-                });
-            } else {
-                // remove file valid in temp folder
-                fs.unlink(tempPath, function (err) {
-                    if (err) throw err;
-                    res.json(500, {error: 'Only image files are allowed'});
-                });
-            }
-        }
+                    if (fileType === '.png' || fileType === '.jpg' || fileType === '.gif' || fileType === '.jpeg') {
+                        // move file from temp to target folder
+                        fs.rename(tempPath, targetPath, function (err) {
+                            if (err) throw err;
+                            // save image to database
+                            var newImg = new Models.Image({
+                                title: req.body.title,
+                                filename: imageUrl + fileType,
+                                description: req.body.description,
+                            });
+                            newImg.save(function (err, image) {
+                                if (err) throw err;
+                                res.redirect('/images/' + image.uniqueId);
+                            });
+                        });
+                    } else {
+                        // remove file valid in temp folder
+                        fs.unlink(tempPath, function (err) {
+                            if (err) throw err;
+                            res.json(500, {error: 'Only image files are allowed'});
+                        });
+                    }
+                }
+            });
+        };
         saveImage();
     },
 
     like: function (req, res) {
-        res.send('The image:like POST controller');
+        // Get Image need like
+        Models.Image.findOne({filename: {$regex: req.params.image_id}},
+            function (err, image) {
+                // count like
+                if (!err && image) {
+                    image.likes = image.likes + 1;
+                    image.save(function (err) {
+                        if (err) {
+                            res.json(err);
+                        } else {
+                            res.json({likes: image.likes});
+                        }
+                    });
+                }
+            });
     },
 
     comment: function (req, res) {
-        res.send('The image:comment POST controller');
+        // find images need comment
+        Models.Image.findOne({filename: {$regex: req.params.image_id}},
+            function (err, image) {
+                if (!err && image) {
+                    // get new comment form form
+                    var newComment = new Models.Comment(req.body);
+                    console.log("Comment...");
+                    console.log(req.body);
+                    newComment.gravatar = md5(newComment.email);
+                    newComment.image_id = image._id;
+                    newComment.save(function (err, comment) {
+                        if (err) {
+                            throw err;
+                        }
+                        res.redirect('/images/' + image.uniqueId + '#' + comment._id);
+                    });
+                } else {
+                    res.redirect('/');
+                }
+            });
+    },
+
+    remove: function (req, res) {
+        Models.Image.findOne({filename: {$regex: req.params.image_id}},
+            function (err, image) {
+                if (err) {
+                    throw err;
+                }
+                // remove file on server
+                fs.unlink(path.resolve('./public/upload/' + image.filename),
+                    function (err) {
+                        if (err) {
+                            throw err;
+                        }
+                        // remove comment on image
+                        Models.Comment.remove({image_id: image._id},
+                            function (err) {
+                                image.remove(function (err) {
+                                    if (!err) {
+                                        res.json(true);
+                                    } else {
+                                        res.json(false);
+                                    }
+                                });
+                            });
+                    });
+            });
     }
 };
