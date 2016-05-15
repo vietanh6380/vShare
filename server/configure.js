@@ -28,7 +28,8 @@ module.exports = function (app) {
     app.set('view engine', 'handlebars');
 
     app.use(morgan('dev'));
-    app.use(bodyParser());
+    app.use(bodyParser.urlencoded({'extended': true}));
+    app.use(bodyParser.json());
     app.use(multer({dest: path.join(__dirname, 'public/upload/temp')}));
 
     app.use(methodOverride());
