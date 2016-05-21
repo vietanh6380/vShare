@@ -4,7 +4,8 @@
   "description": "Small Application for share images , gif....",
   "main": "server.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "node server.js"
   },
   "author": "anhntv11",
   "license": "ISC",
