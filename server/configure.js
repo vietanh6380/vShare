@@ -1,4 +1,4 @@
-/**
+/**IMAGE
  * Created by gaumeo on 5/13/16.
  */
 var path = require('path');
@@ -14,6 +14,8 @@ var moment = require('moment');
 var multer = require('multer');
 
 module.exports = function (app) {
+
+    // Set up view engineq
     app.engine('handlebars', exphbs.create({
         defaultLayout: 'main',
         layoutsDir: app.get('views') + '/layouts',
@@ -27,15 +29,24 @@ module.exports = function (app) {
     }).engine);
     app.set('view engine', 'handlebars');
 
+    //set up logging and debug
     app.use(morgan('dev'));
+    // set up body parser for router
     app.use(bodyParser.urlencoded({'extended': true}));
     app.use(bodyParser.json());
+    // set up for file upload
     app.use(multer({dest: path.join(__dirname, 'public/upload/temp')}));
 
+    // set up for browser old version not support DELETE and UPDATE
     app.use(methodOverride());
-    app.use(cookieParser('some-secret-value-here'));
-    routes.initialize(app);
 
+    // set up for cookie parser
+    app.use(cookieParser('some-secret-value-here'));
+
+    // initialize middleware for app
+    routes.initialize(app);
+    
+    // setting public resource
     app.use('/public/', express.static(path.join(__dirname, '../public')));
 
     if ('development' === app.get('env')) {

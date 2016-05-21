@@ -1,6 +1,9 @@
 /**
  * Created by gaumeo on 5/14/16.
  */
+/**
+ * Class helper for get information comment to sidebar
+ */
 var Models = require('../models');
 var async = require('async');
 module.exports = {

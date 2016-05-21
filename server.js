@@ -1,6 +1,9 @@
 /**
  * Created by gaumeo on 5/12/16.
  */
+/**
+ * Main of project .
+ */
 var express = require('express');
 var config = require('./server/configure');
 var app = express();

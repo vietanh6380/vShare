@@ -1,6 +1,9 @@
 /**
  * Created by gaumeo on 5/14/16.
  */
+/**
+ * Class helper for get information images to sidebar
+ */
 var Models = require('../models');
 module.exports = {
     popular: function (callback) {
